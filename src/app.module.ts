@@ -12,6 +12,7 @@ import { SectionModule } from './modules/section/section.module';
 import { GradeModule } from './modules/grade/grade.module';
 import { OffenceModule } from './modules/offence/offence.module';
 import { StudentOffenceModule } from './modules/student_offence/student-offence.module';
+import { PingModule } from './modules/ping/ping.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { StudentOffenceModule } from './modules/student_offence/student-offence.
     SectionModule,
     GradeModule,
     OffenceModule,
-    StudentOffenceModule
+    StudentOffenceModule,
+    PingModule
   ],
   controllers: [AppController],
   providers: [
