@@ -13,6 +13,7 @@ import { GradeModule } from './modules/grade/grade.module';
 import { OffenceModule } from './modules/offence/offence.module';
 import { StudentOffenceModule } from './modules/student_offence/student-offence.module';
 import { PingModule } from './modules/ping/ping.module';
+import { MailerModule } from './modules/mailer/mailer.module';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { PingModule } from './modules/ping/ping.module';
     GradeModule,
     OffenceModule,
     StudentOffenceModule,
-    PingModule
+    PingModule,
+    MailerModule
   ],
   controllers: [AppController],
   providers: [
