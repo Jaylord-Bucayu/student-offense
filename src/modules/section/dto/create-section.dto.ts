@@ -1,4 +1,4 @@
 export class CreateSectionDto {
-    level:number;
+    level:string;
     name:string;
 }

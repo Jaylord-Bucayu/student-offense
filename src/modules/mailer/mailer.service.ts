@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { CreateMailerDto } from './dto/create-mailer.dto';
-import { UpdateMailerDto } from './dto/update-mailer.dto';
+import * as nodemailer from 'nodemailer';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MailerService {
-  create(createMailerDto: CreateMailerDto) {
-    return 'This action adds a new mailer';
+  private transporter: nodemailer.Transporter;
+
+  constructor(private readonly configService: ConfigService) {
+    this.transporter = nodemailer.createTransport({
+      service: 'gmail', // Specify Gmail as the service
+      auth: {
+        user: this.configService.get<string>('SMTP_USER'), // Gmail email
+        pass: this.configService.get<string>('SMTP_PASS'), // App password
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all mailer`;
-  }
+  async sendMail(to: string, subject: string, text: string, html?: string): Promise<void> {
+    const from = this.configService.get<string>('SMTP_FROM');
+    const mailOptions = {
+      from,
+      to,
+      subject,
+      text,
+      html, // Optional
+    };
 
-  findOne(id: number) {
-    return `This action returns a #${id} mailer`;
-  }
-
-  update(id: number, updateMailerDto: UpdateMailerDto) {
-    return `This action updates a #${id} mailer`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} mailer`;
+    await this.transporter.sendMail(mailOptions);
   }
 }

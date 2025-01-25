@@ -6,6 +6,8 @@ import { StudentOffense } from './entities/student-offence.entity';
 import { Repository } from 'typeorm';
 import { Student } from '../student/entities/student.entity';
 import { ObjectId } from 'mongodb';
+import { DateTime } from 'luxon';
+import { MailerService } from '../mailer/mailer.service';
 
 @Injectable()
 export class StudentOffenceService {
@@ -14,48 +16,80 @@ export class StudentOffenceService {
     private readonly studentOffenseRepository: Repository<StudentOffense>,
     @InjectRepository(Student)
     private readonly studentRepository: Repository<Student>,
+     private readonly mailerService: MailerService,
   ) {}
 
   // Create a new student offense
 // Create a new student offense
 async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentOffense> {
-  // Convert the student_id to ObjectId if needed
-  const student_id = createStudentOffenseDto.student_id;
+  try {
+    // Log the incoming data
+    console.log(createStudentOffenseDto);
 
-  // Find the student by MongoDB _id
-  const student = await this.studentRepository.findOne({
-    where: { student_id },
-  });
+    // Extract and process the student_id
+    const student_id = createStudentOffenseDto.student_id;
 
-
-  console.log(student)
-  // Throw an error if the student does not exist
-  if (!student) {
-    throw new NotFoundException(`Student with ID ${createStudentOffenseDto.student_id} not found`);
-  }
-
-  // Check if an offense with the same student_id and offense_name already exists
-  let offense = await this.studentOffenseRepository.findOne({
-    where: { student_id: student.id, offense_name: createStudentOffenseDto.offense_name },
-  });
-
-  if (offense) {
-    // If offense exists, increment the count
-    offense.count += 1;
-  } else {
-    // Create a new offense with count set to 1 if it's the first offense
-    offense = this.studentOffenseRepository.create({
-      ...createStudentOffenseDto,
-      student_id: student.id,
-      student_name:`${student.first_name} ${student.middle_initial} ${student.last_name}`,
-      section_name:student.section_name,
-      count: 1,
+    // Find the student by MongoDB _id
+    const student = await this.studentRepository.findOne({
+      where: { student_id },
     });
-  }
 
-  // Save the offense in the repository
-  return await this.studentOffenseRepository.save(offense);
+    // Log the found student
+    console.log(student);
+
+    // Throw an error if the student does not exist
+    if (!student) {
+      throw new NotFoundException(`Student with ID ${createStudentOffenseDto.student_id} not found`);
+    }
+
+    // Check if an offense with the same student_id and offense_name already exists
+    let offense = await this.studentOffenseRepository.findOne({
+      where: { student_id: student.id, offense_name: createStudentOffenseDto.offense_name },
+    });
+
+    if (offense) {
+      // If offense exists, increment the count
+      offense.count += 1;
+    } else {
+      // Create a new offense with count set to 1 if it's the first offense
+      offense = this.studentOffenseRepository.create({
+        ...createStudentOffenseDto,
+        student_id: student.id,
+        student_name: `${student.first_name} ${student.middle_initial} ${student.last_name}`,
+        section_name: student.section_name,
+        count: 1,
+        status: "pending",
+      });
+    }
+
+    // Send a violation email to the student
+    await this.mailerService.sendMail(
+      'jaylordbucayu@gmail.com',
+      `Reminder: ${offense.offense_name} Violation Notice`,
+      `Hello ${offense.student_name}, 
+       
+      This is a reminder that you have violated the following offense: ${offense.offense_name}.
+      
+      Please be aware that your service is scheduled at ${offense.service_time} in ${createStudentOffenseDto.location}.
+      
+      It is important that you attend and complete the service as part of the consequences for this violation.
+      
+      If you have any questions or need further assistance, please don't hesitate to contact us.`
+    );
+
+    // Save the offense in the repository
+    return await this.studentOffenseRepository.save(offense);
+  } catch (error) {
+    // Log the error
+    console.error('Error creating student offense:', error);
+
+    // Rethrow the error to allow higher-level error handlers to handle it
+    throw error instanceof NotFoundException
+      ? error
+      : new Error('An unexpected error occurred while creating the student offense');
+  }
 }
+
   // Get all student offenses with optional pagination
   async findAll(page = 1, limit = 10): Promise<{ data: StudentOffense[]; total: number }> {
     const [data, total] = await this.studentOffenseRepository.findAndCount({
@@ -89,4 +123,71 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
     const offense = await this.findOne(id);
     await this.studentOffenseRepository.remove(offense);
   }
+
+
+  async findPendingOffenses(): Promise<StudentOffense[]> {
+    const today = DateTime.now().startOf('day');
+
+    return await this.studentOffenseRepository.find({
+      where: {
+        status: 'pending',
+        date_of_service: today.toJSDate(), // Ensure the date matches today
+      },
+    });
+  }
+
+  async getTopOffenders(
+    page = 1,
+    limit = 10
+  ): Promise<{ data: StudentOffense[]; total: number }> {
+    try {
+      // Fetch and count student offenses with pagination and sorting by count in descending order
+      const [data, total] = await this.studentOffenseRepository.findAndCount({
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { count: 'DESC', createdAt: 'DESC' }, // Sort by count and fallback to createdAt
+      });
+  
+      return { data, total };
+    } catch (error) {
+      console.error('Error retrieving top offenders:', error);
+      throw new Error('An error occurred while fetching top offenders');
+    }
+  }
+  
+  async getOffensesCountByMonth(): Promise<{ data: { month: string; count: number }[], total: number }> {
+    // Fetch all offenses from the database
+    const offenses = await this.studentOffenseRepository.find();
+
+    // Group and count offenses by year and month
+    const offensesByMonth = offenses.reduce((acc, offense) => {
+      const date = new Date(offense.date_of_service);
+      const month = date.getMonth(); // JavaScript months are 0-based (0 = January, 11 = December)
+
+      if (!acc[month]) {
+        acc[month] = 0;
+      }
+      acc[month] += 1;
+
+      return acc;
+    }, {} as Record<number, number>);
+
+    // Month names array to map the month number to the full month name
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    // Convert the grouped data into the desired format
+    const data = Object.entries(offensesByMonth).map(([month, count]) => ({
+      month: monthNames[parseInt(month)], // Convert the month number to the month name
+      count, // The count of offenses for this month
+    }));
+
+    // Calculate the total number of offenses
+    const total = offenses.length;
+
+    return { data, total };
+  }
+
 }

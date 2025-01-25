@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         type: 'mongodb',
+        useUnifiedTopology: true,
           url:configService.get('DB_URL'),
           // host: configService.getOrThrow('DB_HOST'),
           // port: configService.getOrThrow('DB_PORT'),

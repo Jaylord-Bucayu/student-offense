@@ -31,4 +31,15 @@ export class StudentOffenceController {
   remove(@Param('id') id: string) {
     return this.studentOffenceService.remove(+id);
   }
+
+  @Get('top/offender')
+  getTopOffenders() {
+    return this.studentOffenceService.getTopOffenders();
+  }
+
+  @Get('get/counts-by-month')
+  async getOffensesCountsByMonth() {
+    return await this.studentOffenceService.getOffensesCountByMonth();
+  }
+
 }

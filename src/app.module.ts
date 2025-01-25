@@ -14,10 +14,12 @@ import { OffenceModule } from './modules/offence/offence.module';
 import { StudentOffenceModule } from './modules/student_offence/student-offence.module';
 import { PingModule } from './modules/ping/ping.module';
 import { MailerModule } from './modules/mailer/mailer.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true,}),
+    ScheduleModule.forRoot(), // Enables scheduling
     DatabaseModule,
     AuthModule,
     StudentModule,

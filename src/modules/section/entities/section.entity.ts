@@ -5,7 +5,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 @Entity()
 export class Section extends AbstractEntity<Section> {
   @Column()
-  level: number;
+  level: string;
 
   @Column()
   name: string;
