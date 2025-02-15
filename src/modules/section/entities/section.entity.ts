@@ -8,5 +8,5 @@ export class Section extends AbstractEntity<Section> {
   level: string;
 
   @Column()
-  name: string;
+  section_name: string;
 }

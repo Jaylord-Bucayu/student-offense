@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Student } from './entities/student.entity';
 import { Repository } from 'typeorm';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class StudentService {
@@ -34,9 +35,35 @@ export class StudentService {
   }
 
   async update(id: string, updateStudentDto: UpdateStudentDto): Promise<Student> {
-    const student = await this.findOne(id);
-    Object.assign(student, updateStudentDto);
-    return await this.studentRepository.save(student);
+   if (!ObjectId.isValid(id)) {
+           throw new BadRequestException(`Invalid student offense ID: ${id}`);
+       }
+   
+       const objectId = new ObjectId(id);
+   
+       console.log({updateStudentDto})
+   
+       // Check if the student offense exists
+       //@ts-ignore
+       const existingRecord = await this.studentRepository.findOneBy({ _id: objectId });
+       console.log(existingRecord);
+       if (!existingRecord) {
+           throw new NotFoundException(`Student offense with ID ${id} not found`);
+       }
+   
+       // Perform the update
+       //@ts-ignore
+       const updatedRecord = await this.studentRepository.findOneAndUpdate(
+           { _id: objectId },  // ✅ Fixed: Use `_id`, not `id`
+           { $set: updateStudentDto },
+           { returnDocument: 'after' }  // ✅ Returns the updated document
+       );
+   
+       if (!updatedRecord) {
+           throw new BadRequestException(`Failed to update student offense with ID: ${id}`);
+       }
+   
+       return updatedRecord;
   }
 
   async remove(id: string): Promise<void> {

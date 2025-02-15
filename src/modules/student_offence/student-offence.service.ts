@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateStudentOffenceDto } from './dto/create-student-offence.dto';
 import { UpdateStudentOffenceDto } from './dto/update-student-offence.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -102,7 +102,7 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
   }
   
   // Get a single student offense by ID
-  async findOne(id: number): Promise<StudentOffense> {
+  async findOne(id: string): Promise<StudentOffense> {
     //@ts-ignore
     const offense = await this.studentOffenseRepository.findOneBy({ id });
     if (!offense) {
@@ -112,14 +112,42 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
   }
 
   // Update a student offense by ID
-  async update(id: number, updateStudentOffenseDto: UpdateStudentOffenceDto): Promise<StudentOffense> {
-    const offense = await this.findOne(id);
-    Object.assign(offense, updateStudentOffenseDto);
-    return await this.studentOffenseRepository.save(offense);
-  }
+  async update(id: string, updateStudentOffenseDto: UpdateStudentOffenceDto): Promise<StudentOffense> {
+    if (!ObjectId.isValid(id)) {
+        throw new BadRequestException(`Invalid student offense ID: ${id}`);
+    }
+
+    const objectId = new ObjectId(id);
+
+    console.log({updateStudentOffenseDto})
+
+    // Check if the student offense exists
+    //@ts-ignore
+    const existingRecord = await this.studentOffenseRepository.findOneBy({ _id: objectId });
+    console.log(existingRecord);
+    if (!existingRecord) {
+        throw new NotFoundException(`Student offense with ID ${id} not found`);
+    }
+
+    // Perform the update
+    //@ts-ignore
+    const updatedRecord = await this.studentOffenseRepository.findOneAndUpdate(
+        { _id: objectId },  // ✅ Fixed: Use `_id`, not `id`
+        { $set: updateStudentOffenseDto },
+        { returnDocument: 'after' }  // ✅ Returns the updated document
+    );
+
+    if (!updatedRecord) {
+        throw new BadRequestException(`Failed to update student offense with ID: ${id}`);
+    }
+
+    return updatedRecord;
+}
+
+
 
   // Delete a student offense by ID
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const offense = await this.findOne(id);
     await this.studentOffenseRepository.remove(offense);
   }
@@ -189,5 +217,24 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
 
     return { data, total };
   }
+
+  async getOverduePendingOffenses(): Promise<{ data: StudentOffense[]; total: number }> {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  
+    const query: any = {
+      status: 'pending',
+      date_of_service: { $lte: oneWeekAgo.toISOString() }, // Ensure string comparison
+    };
+  
+    const [data, total] = await this.studentOffenseRepository.findAndCount({
+      where: query,
+      order: { date_of_service: 'ASC' }, // Ensure correct sorting format
+    });
+  
+    return { data, total };
+  }
+  
+  
 
 }

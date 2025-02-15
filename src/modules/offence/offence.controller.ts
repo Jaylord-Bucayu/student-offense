@@ -24,7 +24,7 @@ export class OffenceController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateOffenceDto: UpdateOffenceDto) {
-    return this.offenceService.update(+id, updateOffenceDto);
+    return this.offenceService.update(id, updateOffenceDto);
   }
 
   @Delete(':id')

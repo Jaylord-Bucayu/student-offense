@@ -134,6 +134,7 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    console.log(updateUserDto)
 
     Object.assign(user, updateUserDto);
     return this.itemRepository.save(user);

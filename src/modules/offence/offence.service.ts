@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOffenceDto } from './dto/create-offence.dto';
 import { UpdateOffenceDto } from './dto/update-offence.dto';
 import { Offense } from './entities/offence.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class OffenceService {
@@ -38,10 +39,34 @@ export class OffenceService {
   }
 
   // Update an offense by ID
-  async update(id: number, updateOffenseDto: UpdateOffenceDto): Promise<Offense> {
-    const offense = await this.findOne(id);
-    Object.assign(offense, updateOffenseDto);
-    return await this.offenseRepository.save(offense);
+  async update(id: string, updateOffenseDto: UpdateOffenceDto): Promise<Offense> {
+   if (!ObjectId.isValid(id)) {
+           throw new BadRequestException(`Invalid section offense ID: ${id}`);
+       }
+   
+       const objectId = new ObjectId(id);
+   
+       // Check if the student offense exists
+       //@ts-ignore
+       const existingRecord = await this.offenseRepository.findOneBy({ _id: objectId });
+       console.log(existingRecord);
+       if (!existingRecord) {
+           throw new NotFoundException(`Student offense with ID ${id} not found`);
+       }
+   
+       // Perform the update
+       //@ts-ignore
+       const updatedRecord = await this.offenseRepository.findOneAndUpdate(
+           { _id: objectId },  // ✅ Fixed: Use `_id`, not `id`
+           { $set: updateOffenseDto },
+           { returnDocument: 'after' }  // ✅ Returns the updated document
+       );
+   
+       if (!updatedRecord) {
+           throw new BadRequestException(`Failed to update student offense with ID: ${id}`);
+       }
+   
+       return updatedRecord;
   }
 
   // Delete an offense by ID

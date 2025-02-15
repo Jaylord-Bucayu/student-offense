@@ -9,6 +9,7 @@ export class StudentController {
 
   @Post()
   create(@Body() createStudentDto: CreateStudentDto) {
+    console.log(createStudentDto);
     return this.studentService.create(createStudentDto);
   }
 

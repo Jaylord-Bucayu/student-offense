@@ -19,17 +19,17 @@ export class StudentOffenceController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.studentOffenceService.findOne(+id);
+    return this.studentOffenceService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateStudentOffenceDto: UpdateStudentOffenceDto) {
-    return this.studentOffenceService.update(+id, updateStudentOffenceDto);
+    return this.studentOffenceService.update(id, updateStudentOffenceDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.studentOffenceService.remove(+id);
+    return this.studentOffenceService.remove(id);
   }
 
   @Get('top/offender')
@@ -40,6 +40,11 @@ export class StudentOffenceController {
   @Get('get/counts-by-month')
   async getOffensesCountsByMonth() {
     return await this.studentOffenceService.getOffensesCountByMonth();
+  }
+
+  @Get('get/pending-week')
+  async getOverduePendingOffenses() {
+    return await this.studentOffenceService.getOverduePendingOffenses();
   }
 
 }
