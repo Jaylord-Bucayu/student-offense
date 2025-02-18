@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Student } from './entities/student.entity';
 import { Repository } from 'typeorm';
 import { ObjectId } from 'mongodb';
+import { debug } from 'ps-logger';
 
 @Injectable()
 export class StudentService {
@@ -23,6 +24,7 @@ export class StudentService {
       skip: (page - 1) * limit,
       take: limit,
     });
+
     return { data, total };
   }
 

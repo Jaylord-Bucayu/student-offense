@@ -20,4 +20,7 @@ export class Student extends AbstractEntity<Student> {
 
   @Column()
   grade_level: string;
+
+  @Column()
+  email: string;
 }

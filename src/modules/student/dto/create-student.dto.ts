@@ -25,4 +25,8 @@ export class CreateStudentDto {
   @IsNotEmpty()
   @IsString()
   grade_level: string;
+
+  @IsNotEmpty()
+  @IsString()
+  email: string;
 }

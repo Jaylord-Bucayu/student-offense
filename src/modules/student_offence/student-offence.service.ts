@@ -64,7 +64,7 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
 
     // Send a violation email to the student
     await this.mailerService.sendMail(
-      'jaylordbucayu@gmail.com',
+      student.email,
       `Reminder: ${offense.offense_name} Violation Notice`,
       `Hello ${offense.student_name}, 
        
