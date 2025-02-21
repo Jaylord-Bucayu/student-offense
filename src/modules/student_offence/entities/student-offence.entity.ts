@@ -34,4 +34,7 @@ export class StudentOffense extends AbstractEntity<StudentOffense>{
   @Column()
   service_time: string;
 
+  @Column()
+  grade_level: string;
+
 }

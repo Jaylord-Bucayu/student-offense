@@ -59,6 +59,7 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
         section_name: student.section_name,
         count: 1,
         status: "pending",
+        grade_level:student.grade_level
       });
     }
 
