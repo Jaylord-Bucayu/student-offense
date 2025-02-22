@@ -92,8 +92,19 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
 }
 
   // Get all student offenses with optional pagination
-  async findAll(page = 1, limit = 10): Promise<{ data: StudentOffense[]; total: number }> {
+  async findAll(
+    page = 1,
+    limit = 10,
+    gradeLevel?: string
+  ): Promise<{ data: StudentOffense[]; total: number }> {
+    const where: any = {};
+  
+    if (gradeLevel) {
+      where.gradeLevel = gradeLevel;
+    }
+  
     const [data, total] = await this.studentOffenseRepository.findAndCount({
+      where,
       skip: (page - 1) * limit,
       take: limit,
       order: { createdAt: 'DESC' },
@@ -101,6 +112,7 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
   
     return { data, total };
   }
+  
   
   // Get a single student offense by ID
   async findOne(id: string): Promise<StudentOffense> {

@@ -13,8 +13,12 @@ export class StudentOffenceController {
   }
 
   @Get()
-  findAll(@Query('page') page = 1, @Query('limit') limit = 10) {
-    return this.studentOffenceService.findAll(+page, +limit);
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('gradeLevel') gradeLevel?: string
+  ) {
+    return this.studentOffenceService.findAll(Number(page), Number(limit), gradeLevel);
   }
 
   @Get(':id')
