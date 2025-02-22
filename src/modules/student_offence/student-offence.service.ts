@@ -95,12 +95,12 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
   async findAll(
     page = 1,
     limit = 10,
-    gradeLevel?: string
+    grade_level?: string
   ): Promise<{ data: StudentOffense[]; total: number }> {
     const where: any = {};
   
-    if (gradeLevel) {
-      where.gradeLevel = gradeLevel;
+    if (grade_level) {
+      where.grade_level = grade_level;
     }
   
     const [data, total] = await this.studentOffenseRepository.findAndCount({

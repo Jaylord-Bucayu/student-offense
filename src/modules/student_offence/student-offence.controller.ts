@@ -16,9 +16,9 @@ export class StudentOffenceController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('gradeLevel') gradeLevel?: string
+    @Query('grade_level') grade_level?: string
   ) {
-    return this.studentOffenceService.findAll(Number(page), Number(limit), gradeLevel);
+    return this.studentOffenceService.findAll(Number(page), Number(limit), grade_level);
   }
 
   @Get(':id')
