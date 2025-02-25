@@ -19,7 +19,7 @@ export class StudentService {
     return await this.studentRepository.save(newStudent);
   }
 
-  async findAll(page = 1, limit = 10): Promise<{ data: Student[]; total: number }> {
+  async findAll(page = 1, limit = 200): Promise<{ data: Student[]; total: number }> {
     const [data, total] = await this.studentRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,

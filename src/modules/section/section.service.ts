@@ -18,7 +18,7 @@ export class SectionService {
     return await this.sectionRepository.save(section);
   }
 
-  async findAll(page = 1, limit = 10): Promise<{ data: Section[]; total: number }> {
+  async findAll(page = 1, limit = 100): Promise<{ data: Section[]; total: number }> {
     const [data, total] = await this.sectionRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,

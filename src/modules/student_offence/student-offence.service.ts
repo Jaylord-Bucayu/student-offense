@@ -94,7 +94,7 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
   // Get all student offenses with optional pagination
   async findAll(
     page = 1,
-    limit = 10,
+    limit = 200,
     grade_level?: string
   ): Promise<{ data: StudentOffense[]; total: number }> {
     const where: any = {};
