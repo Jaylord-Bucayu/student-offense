@@ -11,7 +11,4 @@ export class Offense extends AbstractEntity<Offense> {
   @Column({ nullable: true })
   description: string;
 
-  @Column()
-  level: string;
-
 }

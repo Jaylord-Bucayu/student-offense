@@ -20,7 +20,7 @@ export class OffenceService {
   }
 
   // Get all offenses with optional pagination
-  async findAll(page = 1, limit = 10): Promise<{ data: Offense[]; total: number }> {
+  async findAll(page = 1, limit = 200): Promise<{ data: Offense[]; total: number }> {
     const [data, total] = await this.offenseRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
