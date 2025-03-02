@@ -161,8 +161,10 @@ async create(createStudentOffenseDto: CreateStudentOffenceDto): Promise<StudentO
 
   // Delete a student offense by ID
   async remove(id: string): Promise<void> {
-    const offense = await this.findOne(id);
-    await this.studentOffenseRepository.remove(offense);
+    const result = await this.studentOffenseRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Student with ID ${id} not found`);
+    }
   }
 
 
